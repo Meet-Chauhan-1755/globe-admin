@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fill RFQ Details | Globe Enterprise</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* ================= BODY ================= */
+    body{
+      font-family:"Segoe UI",sans-serif;
+      margin:0;
+      background:linear-gradient(135deg,#eef3f9,#dfe9f5);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      overflow:hidden;
+    }
+    /* ================= CARD ================= */
+    .card{
+      width:100%;
+      max-width:1250px;
+      max-height:92vh;
+      background:#ffffff;
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.12);
+      padding:25px 35px;
+      padding-bottom:20px;
+      box-sizing:border-box;
+      overflow:auto;
+      position: relative;
+    }
+    .back-btn {
+        position: absolute;
+        top: 25px;
+        left: 35px;
+        text-decoration: none;
+        color: #1a73e8;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    h2{
+      text-align:center;
+      margin:0 0 18px 0;
+      font-weight:600;
+      color:#1a73e8;
+    }
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+    .grid-3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+    .group{
+      margin-bottom:10px;
+    }
+    label{
+      font-size:11px;
+      font-weight:600;
+      color:#444;
+      display:block;
+      margin-bottom:5px;
+      letter-spacing:0.3px;
+    }
+    input,select,textarea{
+      width:100%;
+      padding:9px 12px;
+      border-radius:8px;
+      border:1.5px solid #d8e1ec;
+      font-size:13px;
+      background:#f9fbfe;
+      box-sizing:border-box;
+      transition:0.25s;
+    }
+    .readonly-field {
+      background: #f1f3f5 !important;
+      color: #666 !important;
+      border-color: #dee2e6 !important;
+      cursor: not-allowed;
+    }
+    textarea{
+      resize:none;
+    }
+    input:focus,select:focus,textarea:focus{
+      border-color:#1a73e8;
+      background:white;
+      box-shadow:0 0 0 3px rgba(26,115,232,0.15);
+      outline:none;
+    }
+    button{
+      margin-top:12px;
+      padding:12px 35px;
+      border:none;
+      border-radius:10px;
+      background:linear-gradient(135deg,#1a73e8,#0fb9b1);
+      color:white;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      display:block;
+      margin-left:auto;
+      margin-right:auto;
+      transition:0.25s;
+    }
+    button:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 25px rgba(0,0,0,0.25);
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+    <a href="/ops-dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    
+    <h2>📦 Update RFQ Details</h2>
+
+    <div class="grid-2">
+      <div class="group">
+        <label>Company Name *</label>
+        <input type="text" id="company" class="readonly-field" readonly>
+      </div>
+      <div class="group">
+        <label>Email Subject Line *</label>
+        <input id="subject" type="text" class="readonly-field" readonly>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <label>Pickup City/Address *</label>
+        <input id="pickup_address" placeholder="Enter full address">
+      </div>
+      <div class="group">
+        <label>Delivery City/Address *</label>
+        <input id="delivery_address" placeholder="Enter full address">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <label>Pickup Pincode</label>
+        <input type="number" id="pickup_pincode">
+      </div>
+      <div class="group">
+        <label>Delivery Pincode</label>
+        <input type="number" id="delivery_pincode">
+      </div>
+    </div>
+
+    <div class="group">
+      <label>Type of Material *</label>
+      <input id="material" placeholder="e.g. Steel Pipes" type="text">
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <label>Unit of Measurement</label>
+         <select id="dimUnit">
+            <option value="FT" selected>FT</option> 
+            <option value="M">Meter</option>
+            <option value="Inch">Inch</option>
+            <option value="mm">mm</option>
+             <option value="CM">Centimeter</option>
+        </select>
+       </div>
+      <div class="group">
+        <label>Weight Unit Selection</label>
+        <select id="weightUnit">
+          <option value="MT">MT</option>
+          <option value="KG">KG</option>
+          <option value="TON">TON</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <label>Dimensions (L x W x H) *</label>
+        <div class="grid-3">
+          <input type="number" id="length" placeholder="L" min="0" step="any">
+          <input type="number" id="breadth" placeholder="W" min="0" step="any">
+          <input type="number" id="height" placeholder="H" min="0" step="any">
+        </div>
+      </div>
+      <div class="group">
+        <label>Weight Value *</label>
+        <input type="number" min="0" step="any" id="weight" placeholder="Enter Weight">
+      </div>
+    </div>
+
+    <div class="group">
+      <label>Vehicle Type *</label>
+      <input id="vehicle_type" placeholder="e.g. 8 Nos. Hydraulic Axle">
+    </div>
+
+    <div class="group">
+      <label>Admin Remark (Read Only)</label>
+      <textarea id="admin_remark" rows="1" class="readonly-field" readonly></textarea>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <label>Management Remark</label>
+        <textarea id="management_remark" rows="2" placeholder="Enter management notes..."></textarea>
+      </div>
+      <div class="group">
+        <label>Customer Remark</label>
+        <textarea id="customer_remark" rows="2" placeholder="Enter customer notes..."></textarea>
+      </div>
+    </div>
+
+    <button type="button" onclick="submitUpdate()">Update & Complete RFQ</button>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+
+// --- Load RFQ Data ---
+fetch(`/ops/rfqs`)
+.then(res => res.json())
+.then(data => {
+    const item = data.find(r => r.id == id);
+    if(item) {
+        document.getElementById('company').value = item.company || "";
+        document.getElementById('subject').value = item.subject || "";
+        document.getElementById('admin_remark').value = item.admin_remark || item.remark || "";
+        document.getElementById('management_remark').value = item.management_remark || "-";
+        document.getElementById('customer_remark').value = item.customer_remark || "-";
+        document.getElementById('pickup_address').value = item.pickup_city || "";
+        document.getElementById('delivery_address').value = item.delivery_city || "";
+        document.getElementById('pickup_pincode').value = item.pickup_pincode || "";
+        document.getElementById('delivery_pincode').value = item.delivery_pincode || "";
+        document.getElementById('material').value = item.material || "";
+        document.getElementById('vehicle_type').value = item.vehicle_type || "";
+        
+        const dims = item.dimensions || {};
+        document.getElementById('length').value = dims.length || item.length || "";
+        document.getElementById('breadth').value = dims.breadth || item.breadth || "";
+        document.getElementById('height').value = dims.height || item.height || "";
+        document.getElementById('weight').value = item.weight || "";
+    }
+});
+
+function convertToFT(value, unit) {
+  value = Number(value || 0);
+  if (unit === "M") return value * 3.28084;
+  if (unit === "CM") return value * 0.0328084;
+  return value;
+}
+
+function convertToMT(value, unit) {
+  value = Number(value || 0);
+  if (unit === "KG") return value / 1000;
+  return value;
+}
+
+function submitUpdate() {
+    const l = document.getElementById("length").value;
+    const w = document.getElementById("breadth").value;
+    const h = document.getElementById("height").value;
+    const weightVal = document.getElementById("weight").value;
+
+    if (!document.getElementById("material").value || !l || !w || !h || !weightVal) {
+        alert("❌ Please fill all mandatory fields marked with *");
+        return;
+    }
+
+    const cleanL = parseFloat(convertToFT(l, document.getElementById("dimUnit").value).toFixed(2));
+    const cleanB = parseFloat(convertToFT(w, document.getElementById("dimUnit").value).toFixed(2));
+    const cleanH = parseFloat(convertToFT(h, document.getElementById("dimUnit").value).toFixed(2));
+    const cleanW = parseFloat(convertToMT(weightVal, document.getElementById("weightUnit").value).toFixed(3));
+
+    const payload = {
+        pickup_city: document.getElementById("pickup_address").value,
+        delivery_city: document.getElementById("delivery_address").value,
+        pickup_pincode: document.getElementById("pickup_pincode").value,
+        delivery_pincode: document.getElementById("delivery_pincode").value,
+        material: document.getElementById("material").value,
+        vehicle_type: document.getElementById("vehicle_type").value,
+        management_remark: document.getElementById("management_remark").value,
+        customer_remark: document.getElementById("customer_remark").value,
+        dimensions: {
+            length: cleanL.toString(),
+            breadth: cleanB.toString(),
+            height: cleanH.toString()
+        },
+        weight: cleanW.toString()
+    };
+
+    fetch(`/admin/update-rfq/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("✅ RFQ Details Updated!");
+        window.location.href = "/ops-dashboard.html";
+    })
+    .catch(err => alert("Error updating RFQ: " + err.message));
+}
+</script>
+</body>
+</html>

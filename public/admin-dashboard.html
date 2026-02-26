@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard | Globe Enterprise</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body { margin: 0; font-family: "Segoe UI", sans-serif; background: #f8fafc; padding: 40px 20px 110px; }
+    h2 { text-align: center; color: #1a73e8; }
+    
+    /* KPI CARDS */
+    .kpi-container { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 20px; margin-bottom: 35px; }
+    .kpi { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .kpi h3 { font-size: 14px; color: #666; margin: 0; }
+    .kpi p { font-size: 24px; font-weight: bold; color: #1a73e8; margin: 5px 0 0; }
+
+    /* TABLE */
+    .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #1a73e8; color: white; padding: 15px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
+
+    /* Progress Chain Updated */
+    .progress-wrapper { display: flex; flex-direction: column; align-items: center; }
+    .status-chain { display: flex; gap: 15px; justify-content: center; }
+    .status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 50px; }
+    .status-item span { font-size: 9px; font-weight: 600; text-transform: uppercase; color: #7f8c8d; }
+    .step { font-size: 18px; color: #ddd; }
+    .step.done { color: #2ecc71; }
+    .step.loading { color: #3498db; animation: spin 2s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .mgr-info { font-size: 11px; text-align: left; }
+    .mgr-info b { color: #333; display: block; }
+    .mgr-info span { color: #1a73e8; font-weight: 600; }
+
+    .vehicle-tag { background:#e8f0fe; color:#1a73e8; padding:4px 8px; border-radius:4px; font-weight:600; font-size:11px; display:inline-block; }
+    
+    /* SINGLE LINE DIMENSION BOX */
+    .dim-box { font-size:10px; color:#555; margin-top:4px; display: inline-flex; align-items: center; gap: 5px; }
+    .dim-line { background:#f1f3f5; padding:2px 6px; border-radius:4px; border: 1px solid #e9ecef; white-space: nowrap; }
+    .weight-line { background:#e7f5ff; color:#007bff; padding:2px 6px; border-radius:4px; font-weight: bold; border: 1px solid #d0e7ff; white-space: nowrap; }
+    
+    /* SIDE BY SIDE ACTIONS */
+    .action-cell { white-space: nowrap; display: flex; justify-content: center; gap: 5px; }
+    .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+    .btn-delete:hover { background: #e60000; }
+
+    .btn-excel { background: #27ae60; color: white; border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+    .btn-excel:hover { background: #219150; }
+
+    /* NEW: HISTORY MODAL STYLES */
+    .btn-history { background: #6c757d; color: white; border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+    .btn-history:hover { background: #495057; }
+    .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 12px; width: 450px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+    .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #999; }
+    .timeline { position: relative; margin-top: 20px; padding-left: 30px; }
+    .timeline::before { content: ''; position: absolute; left: 7px; top: 5px; width: 2px; height: 90%; background: #e2e8f0; }
+    .timeline-item { position: relative; margin-bottom: 20px; text-align: left; }
+    .timeline-dot { position: absolute; left: -30px; top: 4px; width: 14px; height: 14px; background: #1a73e8; border-radius: 50%; border: 3px white solid; }
+    .timeline-time { font-size: 11px; color: #1a73e8; font-weight: 700; margin-bottom: 2px; }
+    .timeline-msg { font-size: 13px; color: #333; line-height: 1.4; }
+
+    .navbar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a73e8; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; color: white; box-sizing: border-box; z-index: 1000; }
+    .nav-right { display: flex; align-items: center; gap: 15px; }
+    .nav-right a { color: white; text-decoration: none; font-size: 14px; }
+    .btn-nav-efficiency { background: #ffffff; color: #1a73e8 !important; padding: 6px 12px; border-radius: 6px; font-weight: bold; border: 1px solid white; transition: 0.3s; }
+    .btn-nav-efficiency:hover { background: #f1f3f5; transform: translateY(-2px); }
+    .ops-tag { background: #fff3bf; color: #f08c00; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>📊 Admin Enterprise Dashboard</h2>
+
+<div class="kpi-container">
+  <div class="kpi"><h3>Total RFQs</h3><p id="total">0</p></div>
+  <div class="kpi"><h3>Pending Float</h3><p id="pendingFloat">0</p></div>
+  <div class="kpi"><h3>Costing Pending</h3><p id="costingPending">0</p></div>
+  <div class="kpi"><h3>Quotation Pending</h3><p id="quotationPending">0</p></div>
+  <div class="kpi"><h3>Orders Won</h3><p id="ordersWon">0</p></div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+  <tr>
+    <th>ID</th>
+    <th>Company</th>
+    <th>Branch Manager</th>
+    <th>Assigned OPS</th> <th>Route</th>
+    <th>Material Detail</th>
+    <th>Vehicle</th>
+    <th>Status Progress</th>
+    <th>Amount</th>
+    <th>Action</th>
+  </tr>
+</thead>
+    <tbody id="rfqTable"></tbody>
+  </table>
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeHistory()">&times;</span>
+        <h3 style="margin-top:0; color:#1a73e8;"><i class="fas fa-history"></i> Activity Time Logs</h3>
+        <div id="timelineContainer" class="timeline"></div>
+    </div>
+</div>
+
+<div class="navbar">
+  <div>🚚 Globe Enterprise</div>
+  <div class="nav-right">
+    <a href="/admin-efficiency.html" class="btn-nav-efficiency"><i class="fas fa-chart-line"></i> Efficiency Report</a>
+    <a href="/admin-rfq.html"  class="btn-nav-efficiency"><i class="fas fa-chart-line"></i>Create RFQ</a>
+    <a href="/admin-dashboard.html"  class="btn-nav-efficiency"><i class="fas fa-chart-line"></i>Dashboard</a>
+    <a href="/logout"  class="btn-nav-efficiency"><i class="fas fa-chart-line"></i>Logout</a>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+<script>
+let allData = [];
+
+const formatIndianNumber = (num) => {
+    if (!num || isNaN(num) || num == 0) return '-';
+    return '₹' + Number(num).toLocaleString('en-IN');
+};
+
+const getStatusIcon = (isDone) => isDone ? 
+    '<i class="fas fa-check-circle step done"></i>' : 
+    '<i class="fas fa-spinner step loading"></i>';
+
+const formatValue = (val) => (val === 0 || val === "0") ? "0" : val;
+
+function loadDashboard() {
+    fetch("/admin/rfqs")
+    .then(res => res.json())
+    .then(data => {
+        allData = data;
+        const tbody = document.getElementById("rfqTable");
+        tbody.innerHTML = "";
+        
+        let pf=0, cp=0, qp=0, ow=0;
+
+        data.forEach(rfq => {
+            // KPI Counter Logic
+            if (!rfq.status.floated) pf++;
+            if (!rfq.status.costing_received) cp++;
+            if (!rfq.status.quotation_done) qp++;
+            if (rfq.status.order_received === true) ow++;
+
+            const l = rfq.dimensions?.length || rfq.length || 0;
+            const b = rfq.dimensions?.breadth || rfq.breadth || 0;
+            const h = rfq.dimensions?.height || rfq.height || 0;
+
+            let orderStatusHtml = getStatusIcon(rfq.status.order_received);
+            let lossReasonHtml = "";
+
+            // Handle Lost Status specifically
+            if (rfq.status.order_received === false && rfq.loss_reason) {
+                orderStatusHtml = '<i class="fas fa-times-circle step" style="color: #ff4d4d;"></i>';
+                lossReasonHtml = `<div style="color: #e60000; font-size: 9px; font-weight: bold; margin-top: 2px; width: 60px; line-height: 1;">${rfq.loss_reason}</div>`;
+            }
+
+            const row = `
+    <tr>
+        <td>${rfq.id}</td>
+        <td><b>${rfq.company}</b></td>
+        <td>
+            <div class="mgr-info">
+                <b>${rfq.branch_manager || 'Unassigned'}</b>
+                <span>${rfq.manager_phone || '-'}</span>
+                <div style="margin-top: 4px;">
+                    <span style="background: #f1f3f5; color: #666; padding: 2px 6px; border-radius: 4px; font-size: 9px; text-transform: uppercase; border: 1px solid #e2e8f0;">
+                        <i class="fas fa-building" style="font-size: 8px; margin-right: 3px;"></i>${rfq.branch || 'N/A'}
+                    </span>
+                </div>
+            </div>
+        </td>
+        <td><span class="ops-tag">${rfq.assigned_to || 'Not Assigned'}</span></td> 
+        <td>${rfq.pickup_city} <i class="fas fa-arrow-right"></i> ${rfq.delivery_city}</td>
+        <td>
+            <div style="font-weight:700; color:#333; margin-bottom:2px;">${rfq.material}</div>
+            <div class="dim-box">
+                <span class="dim-line">${l}x${b}x${h} FT</span>
+                <span class="weight-line">${rfq.weight || 0} MT</span>
+            </div>
+        </td>
+        <td><span class="vehicle-tag">${rfq.vehicle_type || 'N/A'}</span></td>
+        <td>
+            <div class="progress-wrapper">
+                <div class="status-chain">
+                    <div class="status-item">${getStatusIcon(rfq.status.floated)}<span>Float</span></div>
+                    <div class="status-item">${getStatusIcon(rfq.status.costing_received)}<span>Cost</span></div>
+                    <div class="status-item">${getStatusIcon(rfq.status.quotation_done)}<span>Quote</span></div>
+                    <div class="status-item">
+                        ${orderStatusHtml}
+                        <span>Order</span>
+                        ${lossReasonHtml}
+                    </div>
+                </div>
+            </div>
+        </td>
+        <td style="color:#1a73e8; font-weight:bold;">${formatIndianNumber(rfq.quotation_amount)}</td>
+        <td class="action-cell">
+            <button class="btn-history" onclick="showHistory(${rfq.id})" title="View Logs"><i class="fas fa-history"></i></button>
+            <button class="btn-excel" onclick="downloadExcel(${rfq.id})"><i class="fas fa-file-excel"></i></button>
+            <button class="btn-delete" onclick="deleteRFQ(${rfq.id})"><i class="fas fa-trash"></i></button>
+        </td>
+    </tr>
+`;
+            tbody.innerHTML += row;
+        });
+
+        document.getElementById("total").innerText = formatValue(data.length);
+        document.getElementById("pendingFloat").innerText = formatValue(pf);
+        document.getElementById("costingPending").innerText = formatValue(cp);
+        document.getElementById("quotationPending").innerText = formatValue(qp);
+        document.getElementById("ordersWon").innerText = formatValue(ow);
+    }).catch(err => console.error("Data fetch failed:", err));
+}
+
+function showHistory(rfqId) {
+    const rfq = allData.find(r => r.id == rfqId);
+    const container = document.getElementById("timelineContainer");
+    container.innerHTML = "";
+
+    if (rfq.history && rfq.history.length > 0) {
+        rfq.history.forEach(log => {
+            container.innerHTML += `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-time">${log.timestamp}</div>
+                    <div class="timeline-msg">${log.message}</div>
+                </div>`;
+        });
+    } else {
+        container.innerHTML = "<p style='color:#999; font-size:13px;'>No activity logs found for this RFQ yet.</p>";
+    }
+    document.getElementById("historyModal").style.display = "block";
+}
+
+function closeHistory() {
+    document.getElementById("historyModal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById("historyModal");
+    if (event.target == modal) { modal.style.display = "none"; }
+}
+
+async function downloadExcel(rfqId) {
+    const rfq = allData.find(r => r.id == rfqId);
+    if (!rfq) return;
+
+    const l = rfq.dimensions?.length || rfq.length || 0;
+    const b = rfq.dimensions?.breadth || rfq.breadth || 0;
+    const h = rfq.dimensions?.height || rfq.height || 0;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Quotation');
+
+    worksheet.columns = [
+        { header: '', width: 2 }, { header: '', width: 32 }, { header: '', width: 20 }, 
+        { header: '', width: 15 }, { header: '', width: 8 }, { header: '', width: 8 }, 
+        { header: '', width: 8 }, { header: '', width: 8 }, { header: '', width: 15 }, 
+        { header: '', width: 18 }, { header: '', width: 15 }, { header: '', width: 18 }, 
+        { header: '', width: 15 }, { header: '', width: 12 }
+    ];
+
+    worksheet.addRow([]);
+    const headerRow = worksheet.getRow(2);
+    worksheet.mergeCells('B2:N2');
+    headerRow.getCell(2).value = `RFQ-${rfq.id} | ${rfq.company} | ${rfq.pickup_city} to ${rfq.delivery_city}`;
+    headerRow.getCell(2).font = { name: 'Calibri', size: 11, color: { argb: 'FFFFFFFF' }, bold: true };
+    headerRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2F57' } };
+    headerRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+    headerRow.height = 25;
+
+    const subLabels = ["From Location", "To Location", "Material", "Length (FT)", "Width (FT)", "Height (FT)", "Weight (MT)", "Vehicle Type", "Quotation Per Vehicle", "Detention Amount", "Detention Free Days", "Rates Valid Till", "Remark"];
+    const subHeaderRow = worksheet.getRow(3);
+    subLabels.forEach((text, i) => {
+        const cell = subHeaderRow.getCell(i + 2);
+        cell.value = text;
+        cell.font = { name: 'Calibri', size: 10, bold: true };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+    });
+
+    const dataRow = worksheet.getRow(4);
+    const fromLoc = rfq.pickup_city ? rfq.pickup_city.replace(/,/g, ',\n') : '-';
+
+    const values = [
+        fromLoc, rfq.delivery_city, rfq.material,
+        l, b, h, rfq.weight,
+        rfq.vehicle_type || '-',
+        rfq.quotation_amount ? Number(rfq.quotation_amount).toLocaleString('en-IN') : '-',
+        rfq.detention_amount || '0',
+        "12 Hours each side",
+        new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        "-"
+    ];
+
+    values.forEach((val, i) => {
+        const cell = dataRow.getCell(i + 2);
+        cell.value = val;
+        cell.font = { name: 'Calibri', size: 10 };
+        cell.alignment = { vertical: 'middle', horizontal: (i === 0) ? 'left' : 'center', wrapText: true };
+        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+    });
+    dataRow.height = 110;
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `RFQ_${rfq.id}_Quotation.xlsx`;
+    link.click();
+}
+
+function deleteRFQ(id) {
+    if(confirm("Delete this inquiry?")) {
+        fetch(`/admin/rfq/${id}`, { method: 'DELETE' }).then(() => loadDashboard());
+    }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

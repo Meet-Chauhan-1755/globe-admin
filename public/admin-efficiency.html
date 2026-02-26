@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Efficiency Report | Globe Enterprise</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --dark: #2c3e50;
+            --bg: #f8fafc;
+            --fast: #2ecc71;
+            --avg: #f39c12;
+            --slow: #e74c3c;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            padding-bottom: 100px;
+            color: #333;
+        }
+
+        .header-section {
+            background: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .stats-container { 
+            max-width: 1100px; 
+            margin: auto; 
+            padding: 0 20px;
+        }
+
+        .stats-table-wrapper {
+            background: white; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #eef2f7;
+        }
+
+        .stats-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+
+        .stats-table th { 
+            background: #f1f5f9; 
+            color: #64748b; 
+            padding: 18px 15px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .stats-table td { 
+            padding: 16px 15px; 
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .stats-table tr:last-child td { border-bottom: none; }
+        .stats-table tr:hover { background-color: #f8fafc; }
+
+        .ops-name {
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ops-avatar {
+            width: 32px;
+            height: 32px;
+            background: #e8f0fe;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Speed Badges */
+        .badge { 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 65px;
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 700; 
+        }
+
+        .fast { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } 
+        .avg { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; } 
+        .slow { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Navigation Bar */
+        .navbar { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: var(--primary); 
+            padding: 15px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            color: white; 
+            box-sizing: border-box; 
+            z-index: 1000;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-right a { 
+            background: rgba(255,255,255,0.2);
+            color: white; 
+            text-decoration: none; 
+            font-size: 13px; 
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .nav-right a:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .rfq-count {
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .rfq-count b { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1>📊 Team Efficiency Analytics</h1>
+        <p style="color: #64748b; font-size: 14px; margin-top: 8px;">Real-time performance tracking based on operational turnaround time.</p>
+    </div>
+
+    <div class="stats-container">
+        <div class="stats-table-wrapper">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user-tie"></i> OPS Member</th>
+                        <th><i class="fas fa-layer-group"></i> Total Workload</th>
+                        <th><i class="fas fa-paper-plane"></i> Avg. Float</th>
+                        <th><i class="fas fa-calculator"></i> Avg. Costing</th>
+                        <th><i class="fas fa-file-invoice-dollar"></i> Avg. Quote</th>
+                    </tr>
+                </thead>
+                <tbody id="efficiencyData">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div><i class="fas fa-truck-fast"></i> Globe Enterprise</div>
+        <div class="nav-right">
+            <a href="/admin-dashboard.html"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            try {
+                const res = await fetch('/admin/efficiency-report');
+                const data = await res.json();
+                const tbody = document.getElementById('efficiencyData');
+                
+                const getRating = (val) => {
+                    const m = parseInt(val);
+                    if(m <= 15) return 'fast';
+                    if(m <= 60) return 'avg';
+                    return 'slow';
+                };
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding: 60px 0; color: #94a3b8;">
+                                <i class="fas fa-inbox" style="font-size: 40px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
+                                No activity logs found yet.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map(row => {
+                    const opsName = row.ops.toUpperCase();
+                    const initials = opsName.substring(0, 2);
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <div class="ops-name">
+                                    <div class="ops-avatar">${initials}</div>
+                                    ${opsName}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="rfq-count"><b>${row.total}</b> RFQs Handled</span>
+                            </td>
+                            <td><span class="badge ${getRating(row.avgFloat)}">${Math.round(row.avgFloat)}m</span></td>
+                            <td><span class="badge ${getRating(row.avgCost)}">${Math.round(row.avgCost)}m</span></td>
+                            <td><span class="badge ${getRating(row.avgQuote)}">${Math.round(row.avgQuote)}m</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Failed to load stats:", err);
+                document.getElementById('efficiencyData').innerHTML = `
+                    <tr><td colspan="5" style="text-align:center; padding:30px; color:red;">
+                        <i class="fas fa-exclamation-triangle"></i> Error connecting to server.
+                    </td></tr>`;
+            }
+        }
+        loadStats();
+    </script>
+</body>
+</html>

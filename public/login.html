@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login | Globe RFQ System</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #2b78e4; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 50px 40px;
+      border-radius: 30px;
+      width: 350px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      text-align: center;
+      color: white;
+    }
+
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    p.subtitle {
+      margin-bottom: 40px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .input-group {
+      position: relative;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      padding-right: 45px; /* Added space so text doesn't overlap the eye icon */
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    /* Eye icon styling updated for better blending */
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      width: 22px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .toggle-password:hover {
+      opacity: 0.8;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(to right, #248ad3, #11c0a0);
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .footer-text {
+      margin-top: 30px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header-container">
+    <span><img src="https://img.icons8.com/color/48/lock-landscape.png" width="30" alt="lock"/></span>
+    <h2>Globe RFQ System</h2>
+  </div>
+  <p class="subtitle">Enterprise Logistics Platform</p>
+
+  <div class="input-group">
+    <input id="username" placeholder="Username">
+  </div>
+
+  <div class="input-group">
+    <input id="password" type="password" placeholder="Password">
+    <img src="https://img.icons8.com/material-rounded/24/4a5568/visible.png" 
+         class="toggle-password" 
+         id="eyeIcon" 
+         onclick="toggleVisibility()" 
+         alt="Toggle Visibility">
+  </div>
+
+  <button onclick="login()">Login to Dashboard &rarr;</button>
+
+  <div class="footer-text">
+    🛡 Secure Internal Access • Globe Ecologistics Pvt. Ltd.
+  </div>
+</div>
+
+<script>
+function toggleVisibility() {
+  const passwordInput = document.getElementById("password");
+  const eyeIcon = document.getElementById("eyeIcon");
+  
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    eyeIcon.src = "https://img.icons8.com/material-rounded/24/4a5568/hide.png";
+  } else {
+    passwordInput.type = "password";
+    eyeIcon.src = "https://img.icons8.com/material-rounded/24/4a5568/visible.png";
+  }
+}
+
+function login() {
+  fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      alert("Invalid credentials");
+      return;
+    }
+
+    if (data.role === "admin") {
+      window.location = "/admin-dashboard.html";
+    } else {
+      window.location = "/ops-dashboard.html";
+    }
+  });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Create RFQ | Globe Enterprise</title>
+<style>
+body{ font-family:"Segoe UI",sans-serif; margin:0; background:linear-gradient(135deg,#eef3f9,#dfe9f5); display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; }
+.card{ width:100%; max-width:600px; background:#ffffff; border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,0.12); padding:35px; box-sizing:border-box; }
+h2{ text-align:center; margin:0 0 18px 0; font-weight:600; color:#1a73e8; }
+.group{ margin-bottom:15px; }
+label{ font-size:11px; font-weight:600; color:#444; display:block; margin-bottom:5px; letter-spacing:0.3px; }
+input,select,textarea{ width:100%; padding:10px; border-radius:8px; border:1.5px solid #d8e1ec; font-size:13px; background:#f9fbfe; box-sizing:border-box; transition:0.25s; }
+textarea{ resize:none; }
+input:focus,select:focus,textarea:focus{ border-color:#1a73e8; background:white; outline:none; }
+button{ margin-top:12px; padding:12px 35px; border:none; border-radius:10px; background:linear-gradient(135deg,#1a73e8,#0fb9b1); color:white; font-size:14px; font-weight:600; cursor:pointer; display:block; margin-left:auto; margin-right:auto; transition:0.25s; }
+button:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,0,0,0.25); }
+.navbar{ position:fixed; bottom:0; width:100%; padding:12px 40px; background:linear-gradient(90deg,#1a73e8,#0f4cc9); display:flex; justify-content:space-between; color:white; box-sizing: border-box; }
+.nav-right a{ color:white; text-decoration:none; margin-left:20px; padding:6px 12px; border-radius:6px; }
+.nav-right a.active{ background:white; color:#1a73e8; }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>📦 Create Initial RFQ</h2>
+    <div class="group">
+        <label>Company Name *</label>
+        <input type="text" id="company" placeholder="Enter Company Name">
+    </div>
+    <div class="group">
+        <label>Email Subject Line *</label>
+        <input id="subject" type="text" placeholder="Enter Subject">
+    </div>
+    <div class="group">
+        <label>Assign OPS Member *</label>
+        <select id="assigned_to">
+            <option value="">Select OPS</option>
+            <option value="ops1">OPS_1(KAIVALYA)</option>
+            <option value="ops2">OPS_2(YASHRAJ)</option>
+            <option value="ops3">OPS_3(HARDIK)</option>
+            <option value="ops4">OPS_4(NIRALI)</option>
+            <option value="ops5">OPS_5(JAYESH)</option>
+            <option value="ops6">OPS_6(GANESH)</option>
+            <option value="ops7">OPS_7(VRUSHANK)</option>
+            <option value="ops8">OPS_8(SANJEEV)</option>
+            <option value="ops9">OPS_9(RITESH)</option>
+            <option value="ops10">OPS_10(DEEPU)</option>
+        </select>
+    </div>
+    <div class="group">
+        <label>Initial Admin Remark</label>
+        <textarea id="admin_remark" rows="3" placeholder="Any specific instructions for OPS..."></textarea>
+    </div>
+    <button type="button" onclick="submitRFQ()">Allocate to OPS</button>
+</div>
+
+<div class="navbar">
+    <div>🚚 Globe Admin</div>
+    <div class="nav-right">
+        <a href="/admin-rfq.html" class="active">Create RFQ</a>
+        <a href="/admin-dashboard.html">Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<script>
+function submitRFQ() {
+    const payload = {
+        company: document.getElementById("company").value.trim(),
+        subject: document.getElementById("subject").value.trim(),
+        assigned_to: document.getElementById("assigned_to").value,
+        admin_remark: document.getElementById("admin_remark").value,
+        is_pending_ops: true // Flag to show "Plus" icon on OPS side
+    };
+
+    if (!payload.company || !payload.subject || !payload.assigned_to) {
+        alert("❌ Company, Subject, and OPS Member are mandatory!");
+        return;
+    }
+
+    fetch("/admin/create-rfq", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ Allocated to OPS Member!`);
+            window.location.href = "/admin-dashboard.html";
+        }
+    });
+}
+</script>
+</body>
+</html>

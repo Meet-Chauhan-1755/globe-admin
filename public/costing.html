@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Costing Module | Globe Enterprise</title>
+    <style>
+        body { font-family: "Segoe UI", sans-serif; background: #f0f4f8; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 480px; }
+        h2 { text-align: center; color: #1a73e8; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .group { margin-bottom: 15px; }
+        .full { grid-column: span 2; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 8px; }
+        input { width: 100%; padding: 12px; border: 1.5px solid #e0e6ed; border-radius: 10px; box-sizing: border-box; font-size: 14px; background: #f9fbfe; }
+        input:focus { border-color: #1a73e8; outline: none; background: #fff; }
+        .readonly-box { background: #f1f3f5; font-weight: 700; color: #1a73e8; }
+        .btn-generate { width: 100%; padding: 15px; border: none; border-radius: 12px; background: #28a745; color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-generate:hover { background: #218838; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>💰 Costing Module</h2>
+    <div class="grid">
+        <div class="group full"><label>RFQ ID</label><input type="text" id="rfq_id" readonly class="readonly-box"></div>
+        <div class="group"><label>Transport Cost</label><input type="number" id="t_cost" value="0" oninput="calculate()"></div>
+        <div class="group"><label>RTO / Toll</label><input type="number" id="rto" value="0" oninput="calculate()"></div>
+        <div class="group"><label>Other Charges</label><input type="number" id="other" value="0" oninput="calculate()"></div>
+        <div class="group"><label>Profit Margin</label><input type="number" id="profit" value="0" oninput="calculate()"></div>
+        <div class="group full"><label>Detention (Per Day)</label><input type="number" id="detention" value="0"></div>
+        <div class="group full"><label>Final Quotation (₹)</label><input type="text" id="final_amt" readonly class="readonly-box" value="0"></div>
+    </div>
+    <button class="btn-generate" onclick="generateExcel()">Generate & Download Excel</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const rfqId = params.get('id');
+    document.getElementById('rfq_id').value = rfqId;
+
+    function calculate() {
+        const t = parseFloat(document.getElementById('t_cost').value) || 0;
+        const r = parseFloat(document.getElementById('rto').value) || 0;
+        const o = parseFloat(document.getElementById('other').value) || 0;
+        const p = parseFloat(document.getElementById('profit').value) || 0;
+        document.getElementById('final_amt').value = (t + r + o + p);
+    }
+
+    async function generateExcel() {
+        const finalAmt = document.getElementById('final_amt').value;
+        const detAmt = document.getElementById('detention').value;
+
+        if(!finalAmt || finalAmt == 0) {
+            alert("Please enter costing details first!");
+            return;
+        }
+
+        const res = await fetch('/ops/rfqs');
+        const data = await res.json();
+        const rfq = data.find(r => r.id == rfqId);
+
+        if(!rfq) {
+            alert("RFQ not found!");
+            return;
+        }
+
+        // Logic for Excel Generation
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Quotation');
+
+        worksheet.columns = [
+            { header: '', width: 2 }, 
+            { header: '', width: 30 }, 
+            { header: '', width: 20 },
+            { header: '', width: 10 },
+            { header: '', width: 8 },
+            { header: '', width: 8 },
+            { header: '', width: 8 },
+            { header: '', width: 8 },
+            { header: '', width: 14 },
+            { header: '', width: 18 },
+            { header: '', width: 14 },
+            { header: '', width: 16 },
+            { header: '', width: 14 },
+            { header: '', width: 15 }
+        ];
+
+        worksheet.addRow([]);
+        const headerRow = worksheet.getRow(2);
+        worksheet.mergeCells('B2:N2');
+        headerRow.getCell(2).value = `RFQ-${rfq.id} | ${rfq.company} | ${rfq.subject || 'Material Transportation'}`;
+        headerRow.getCell(2).font = { name: 'Calibri', size: 12, color: { argb: 'FFFFFFFF' }, bold: true };
+        headerRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2F57' } };
+        headerRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+        headerRow.height = 28;
+
+        const subLabels = ["From Location", "To Location", "Material", "Length (FT)", "Width (FT)", "Height (FT)", "Weight (MT)", "Vehicle Type", "Quotation Per Vehicle", "Detention Amount", "Detention Free Days", "Rates Valid Till", "Remark"];
+        const subHeaderRow = worksheet.getRow(3);
+        
+        subLabels.forEach((text, i) => {
+            const cell = subHeaderRow.getCell(i + 2);
+            cell.value = text;
+            cell.font = { name: 'Calibri', size: 11, bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        });
+
+        const l = rfq.dimensions ? rfq.dimensions.length : (rfq.length || 0);
+        const b = rfq.dimensions ? rfq.dimensions.breadth : (rfq.breadth || 0);
+        const h = rfq.dimensions ? rfq.dimensions.height : (rfq.height || 0);
+
+        const dataRow = worksheet.getRow(4);
+        const values = [
+            rfq.pickup_city, rfq.delivery_city, rfq.material,
+            l, b, h,
+            rfq.weight, rfq.vehicle_type || '-',
+            Number(finalAmt).toLocaleString('en-IN'), Number(detAmt).toLocaleString('en-IN'),
+            "24 Hours each side", "7 Days", rfq.admin_remark || "" 
+        ];
+
+        values.forEach((val, i) => {
+            const cell = dataRow.getCell(i + 2);
+            cell.value = val;
+            cell.font = { name: 'Calibri', size: 11 };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; 
+            cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        });
+        
+        dataRow.height = 75; 
+
+        // CRITICAL FIX: Send data to server to update Quotation status and Final Amount
+        // This ensures the dashboard counter updates correctly
+        try {
+            await fetch(`/ops/quote/${rfqId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    amount: finalAmt, 
+                    detention: detAmt 
+                })
+            });
+            
+            // Generate Download
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Quotation_RFQ_${rfqId}.xlsx`;
+            link.click();
+
+            alert("✅ Quotation Submitted & Excel Downloaded!");
+            setTimeout(() => { window.location.href = "/ops-dashboard.html"; }, 1000);
+        } catch (err) {
+            console.error(err);
+            alert("Error updating status on server.");
+        }
+    }
+</script>
+</body>
+</html>

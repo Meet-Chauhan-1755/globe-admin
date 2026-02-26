@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OPS Dashboard | Globe Enterprise</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <style>
+    body { margin: 0; font-family: "Segoe UI", sans-serif; background: linear-gradient(135deg,#eef2f7,#f8fafc); padding: 20px 20px 110px; }
+    h2 { text-align: center; color: #0fb9b1; margin-bottom: 20px; font-weight: 700; }
+    
+    /* PERFORMANCE WIDGET STYLES */
+    .performance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .perf-card { background: white; padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-left: 4px solid #1a73e8; }
+    .perf-card.orange { border-left-color: #f39c12; }
+    .perf-card i { font-size: 20px; color: #636e72; }
+    .perf-info h4 { margin: 0; font-size: 10px; color: #7f8c8d; text-transform: uppercase; }
+    .perf-info p { margin: 2px 0 0; font-size: 16px; font-weight: bold; color: #2d3436; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); }
+    .stat-card h3 { margin: 0; font-size: 11px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card p { margin: 8px 0 0; font-size: 22px; font-weight: bold; color: #1a73e8; }
+    .table-container { overflow-x: auto; background: white; border-radius: 18px; box-shadow: 0 25px 50px rgba(0,0,0,0.08); border: 1px solid #e1e8f0; }
+    table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+    th { background: linear-gradient(90deg,#0fb9b1,#1a73e8); color: white; padding: 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10; }
+    td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f4f8; font-size: 12px; vertical-align: middle; }
+    .mgr-info { font-size: 11px; text-align: left; }
+    .mgr-info b { color: #333; display: block; }
+    .mgr-info span { color: #1a73e8; font-weight: 600; }
+    .branch-tag { font-size: 9px; color: #666; margin-top: 3px; display: flex; align-items: center; gap: 4px; background: #f1f3f5; padding: 1px 5px; border-radius: 3px; width: fit-content; }
+    .progress-wrapper { display: flex; flex-direction: column; align-items: center; }
+    .status-chain { display: flex; gap: 10px; justify-content: center; }
+    .status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 35px; }
+    .status-item span { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #95a5a6; }
+    .step { font-size: 14px; color: #ddd; }
+    .step.done { color: #2ecc71; }
+    .step.failed { color: #dc3545; } 
+    .step.loading { color: #3498db; animation: spin 2s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .vehicle-tag { background:#e8f0fe; color:#1a73e8; padding:3px 6px; border-radius:4px; font-weight:600; font-size:10px; display:inline-block; }
+    .dim-box { font-size:9px; color:#666; margin-top:2px; background:#f1f3f5; padding:2px 6px; border-radius:4px; display:inline-block; white-space: nowrap; }
+    .action-group { display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+    .btn-step { padding: 4px 6px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; color: white; transition: 0.2s; min-width: 45px; }
+    .btn-fill { background: #6c5ce7; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; display: flex; align-items: center; }
+    .btn-fill:hover { background: #5849c4; transform: scale(1.1); }
+    .btn-primary { background:#1a73e8; }
+    .btn-warning { background:#f59e0b; }
+    .btn-success { background:#28a745; }
+    .btn-danger { background:#dc3545; }
+    .btn-step:hover { filter: brightness(1.1); transform: scale(1.05); }
+    .utility-icons { display: flex; align-items: center; gap: 8px; margin-left: 6px; border-left: 1px solid #ddd; padding-left: 8px; }
+    .icon-btn { font-size: 14px; cursor: pointer; transition: 0.2s; }
+    .icon-edit { color: #1a73e8; }
+    .icon-excel { color: #1d6f42; }
+    .icon-mail { color: #ea4335; }
+    .icon-delete { color: #dc3545; }
+    .icon-history { color: #636e72; }
+    .icon-btn:hover { opacity: 0.7; transform: scale(1.2); }
+    .navbar { position: fixed; bottom: 0; left: 0; width: 100%; background: linear-gradient(90deg,#1a73e8,#0f4cc9); padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 -10px 30px rgba(0,0,0,0.25); box-sizing: border-box; z-index: 100; }
+    .nav-right a { color: white; text-decoration: none; margin-left: 18px; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: 0.3s; }
+    .nav-right a:hover { background: rgba(255,255,255,0.1); }
+    .active { background: white; color: #1a73e8 !important; }
+    .loss-reason { color: #dc3545; font-size: 9px; font-weight: bold; margin-top: 4px; max-width: 100px; line-height: 1; text-align: center; }
+    .remark-container { text-align: left; display: flex; flex-direction: column; gap: 2px; }
+    .remark-link { cursor: pointer; color: #1a73e8; font-weight: bold; font-size: 10px; display: block; border-bottom: 1px dashed #cbd5e0; padding: 2px 0; white-space: nowrap; text-decoration: none; }
+    .remark-link:hover { color: #0fb9b1; background-color: #f8fafc; }
+
+    .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: white; margin: 10% auto; padding: 20px; border-radius: 12px; width: 400px; max-height: 70vh; overflow-y: auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .close-modal { position: absolute; right: 15px; top: 10px; font-size: 20px; cursor: pointer; color: #666; }
+    .timeline { border-left: 2px solid #eef2f7; margin-left: 20px; padding-left: 20px; position: relative; }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item::before { content: ""; position: absolute; left: -27px; top: 4px; width: 12px; height: 12px; background: #1a73e8; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #1a73e8; }
+    .timeline-date { font-size: 9px; color: #7f8c8d; font-weight: bold; margin-bottom: 2px; }
+    .timeline-text { font-size: 12px; color: #2d3436; line-height: 1.4; }
+  </style>
+</head>
+<body>
+
+<h2>⚙️ OPS Enterprise Dashboard</h2>
+
+<div class="performance-grid">
+  <div class="perf-card">
+    <i class="fas fa-bolt"></i>
+    <div class="perf-info">
+      <h4>Avg. Floating Speed</h4>
+      <p id="avgFloat">-- Mins</p>
+    </div>
+  </div>
+  <div class="perf-card orange">
+    <i class="fas fa-stopwatch"></i>
+    <div class="perf-info">
+      <h4>Avg. Quoting Speed</h4>
+      <p id="avgQuote">-- Mins</p>
+    </div>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card"><h3>Total RFQs</h3><p id="totalCount">0</p></div>
+  <div class="stat-card"><h3>Pending Float</h3><p id="pendingFloat">0</p></div>
+  <div class="stat-card"><h3>Costing Pending</h3><p id="pendingCosting">0</p></div>
+  <div class="stat-card"><h3>Quotation Pending</h3><p id="pendingQuote">0</p></div>
+  <div class="stat-card"><h3>Orders Won</h3><p id="ordersWon">0</p></div>
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h3 style="margin-top:0; color:#1a73e8; font-size:16px;"><i class="fas fa-history"></i> Audit Trail</h3>
+        <div id="timelineContent" class="timeline"></div>
+    </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Company & Subject</th>
+        <th>Branch Manager</th>
+        <th>Route</th>
+        <th>Material Detail</th>
+        <th>Vehicle</th>
+        <th>Status Progress</th>
+        <th>Costing</th> 
+        <th>Final Quote</th>
+        <th>Remarks</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rfqTable"></tbody>
+  </table>
+</div>
+
+<div class="navbar">
+  <div><i class="fas fa-truck-loading"></i> Globe OPS Enterprise</div>
+  <div class="nav-right">
+    <a href="/ops-dashboard.html" class="active">Dashboard</a>
+    <a href="/logout" style="background:#e53e3e;">Logout</a>
+  </div>
+</div>
+
+<script>
+let currentRFQs = [];
+
+const formatIndianNumber = (num) => {
+    if (!num || isNaN(num) || num == 0) return '-';
+    return '₹' + Number(num).toLocaleString('en-IN');
+};
+
+const getStatusIcon = (isDone, isFailed = false) => {
+    if (isFailed) return '<i class="fas fa-times-circle step failed"></i>';
+    return isDone ? '<i class="fas fa-check-circle step done"></i>' : '<i class="fas fa-spinner step loading"></i>';
+};
+
+function updateCounters(data) {
+    if (!data) return;
+    document.getElementById("totalCount").innerText = data.length;
+    document.getElementById("pendingFloat").innerText = data.filter(r => !r.status || r.status.floated === false).length;
+    document.getElementById("pendingCosting").innerText = data.filter(r => !r.status || r.status.costing_received === false).length;
+    document.getElementById("pendingQuote").innerText = data.filter(r => !r.status || r.status.quotation_done === false).length;
+    document.getElementById("ordersWon").innerText = data.filter(r => r.status && r.status.order_received === true).length;
+}
+
+// FIXED: IMPROVED PERFORMANCE LOGIC
+function loadMyPerformance() {
+    fetch('/admin/efficiency-report')
+    .then(res => res.json())
+    .then(data => {
+        // Find user in the returned report array (backend may return all or just one)
+        // Since we want the display to update, we extract the values
+        if(data && data.length > 0) {
+            // If backend already filtered by session, it's at index 0. 
+            // If it returned multiple, we'd need to find user, but usually index 0 is safe for OPS dash.
+            const stats = data[0]; 
+            document.getElementById('avgFloat').innerText = stats.avgFloat + " Mins";
+            document.getElementById('avgQuote').innerText = stats.avgQuote + " Mins";
+        }
+    }).catch(err => {
+        console.log("Efficiency load failed", err);
+        document.getElementById('avgFloat').innerText = "0 Mins";
+        document.getElementById('avgQuote').innerText = "0 Mins";
+    });
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById("rfqTable");
+    tbody.innerHTML = ""; 
+
+    data.forEach(rfq => {
+        const l = rfq.dimensions?.length || rfq.length || 0;
+        const b = rfq.dimensions?.breadth || rfq.breadth || 0;
+        const h = rfq.dimensions?.height || rfq.height || 0;
+        const w = rfq.weight || 0;
+        const status = rfq.status || { floated: false, costing_received: false, quotation_done: false };
+
+        const lossLabel = (status.order_received === false && rfq.loss_reason) 
+            ? `<div class="loss-reason"><i class="fas fa-exclamation-circle"></i> ${rfq.loss_reason}</div>` 
+            : "";
+
+        const row = `
+          <tr>
+            <td>#${rfq.id}</td>
+            <td style="text-align: left;">
+                <div style="font-weight:bold; color:#333;">${rfq.company}</div>
+                <div style="font-size:10px; color:#666; margin-top:2px; line-height:1.2;">${rfq.subject || 'No Subject Line'}</div>
+            </td>
+            <td>
+                <div class="mgr-info">
+                    <b>${rfq.branch_manager || 'Unassigned'}</b>
+                    <span>${rfq.manager_phone || '-'}</span>
+                    <div class="branch-tag">
+                        <i class="fas fa-map-marker-alt" style="color:#0fb9b1; font-size:8px;"></i> ${rfq.branch || 'NA'}
+                    </div>
+                </div>
+            </td>
+            <td style="font-size: 11px;">${rfq.pickup_city || '-'} <i class="fas fa-arrow-right" style="font-size:9px; color:#1a73e8;"></i> ${rfq.delivery_city || '-'}</td>
+            <td>
+                <div style="font-weight:600; margin-bottom:2px;">${rfq.material || 'N/A'}</div>
+                <div class="dim-box">${l}x${b}x${h} FT | ${w} MT</div>
+            </td>
+            <td><span class="vehicle-tag">${rfq.vehicle_type || 'N/A'}</span></td>
+            <td>
+                <div class="progress-wrapper">
+                    <div class="status-chain">
+                        <div class="status-item">${getStatusIcon(status.floated)}<span>Float</span></div>
+                        <div class="status-item">${getStatusIcon(status.costing_received)}<span>Cost</span></div>
+                        <div class="status-item">${getStatusIcon(status.quotation_done)}<span>Quote</span></div>
+                        <div class="status-item">${getStatusIcon(status.order_received === true, status.order_received === false)}<span>Order</span></div>
+                    </div>
+                    ${lossLabel}
+                </div>
+            </td>
+            <td style="color:#f59e0b; font-weight:bold;">${formatIndianNumber(rfq.costing_amount)}</td>
+            <td style="color:#1a73e8; font-weight:bold;">${formatIndianNumber(rfq.quotation_amount)}</td>
+            <td>
+                <div class="remark-container">
+                    <span class="remark-link" title="Admin: ${rfq.admin_remark || 'No remark'}">Admin</span>
+                    <span class="remark-link" title="Management: ${rfq.management_remark || 'No remark'}" onclick="handleRemark('management', ${rfq.id})">Management</span>
+                    <span class="remark-link" title="Customer: ${rfq.customer_remark || 'No remark'}" onclick="handleRemark('customer', ${rfq.id})">Customer</span>
+                </div>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="btn-fill" title="Complete/Fill Remaining Details" onclick="editInquiry(${rfq.id})">
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+                <button class="btn-step btn-primary" title="Float RFQ" onclick="updateStage('float',${rfq.id})">Float</button>
+                <button class="btn-step btn-warning" title="Enter Costing" onclick="updateStage('costing',${rfq.id})">Cost</button>
+                <button class="btn-step btn-success" title="Submit Quotation" onclick="updateStage('quote',${rfq.id})">Quote</button>
+                <button class="btn-step btn-danger" title="Order Status" onclick="updateStage('order',${rfq.id})">Order</button>
+                <div class="utility-icons">
+                    <i class="fas fa-clock icon-btn icon-history" title="View Audit Trail" onclick="showHistory(${rfq.id})"></i>
+                    <i class="fas fa-edit icon-btn icon-edit" title="Edit Operational Details" onclick="editInquiry(${rfq.id})"></i>
+                    <i class="fas fa-file-excel icon-btn icon-excel" title="Download Excel" onclick="downloadSingleExcel(${rfq.id})"></i>
+                    <i class="fas fa-envelope icon-btn icon-mail" title="Draft Gmail" onclick="sendEmail(${rfq.id})"></i>
+                    <i class="fas fa-trash icon-btn icon-delete" title="Delete RFQ" onclick="deleteInquiry(${rfq.id})"></i>
+                </div>
+              </div>
+            </td>
+          </tr>`;
+        tbody.innerHTML += row;
+    });
+}
+
+function showHistory(id) {
+    const rfq = currentRFQs.find(r => r.id === id);
+    if (!rfq) return;
+
+    const timelineContainer = document.getElementById("timelineContent");
+    if (!rfq.history || rfq.history.length === 0) {
+        timelineContainer.innerHTML = "<p style='font-size:12px; color:#95a5a6;'>No activity recorded yet.</p>";
+    } else {
+        timelineContainer.innerHTML = rfq.history.map(item => `
+            <div class="timeline-item">
+                <div class="timeline-date">${item.timestamp}</div>
+                <div class="timeline-text">${item.message}</div>
+            </div>
+        `).join('');
+    }
+    document.getElementById("historyModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("historyModal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    let modal = document.getElementById("historyModal");
+    if (event.target == modal) closeModal();
+}
+
+function loadTable() {
+    fetch("/ops/rfqs")
+    .then(res => res.json())
+    .then(data => {
+      currentRFQs = data;
+      updateCounters(data);
+      renderTable(data);
+    });
+}
+
+function handleRemark(type, id) {
+    const rfqIndex = currentRFQs.findIndex(r => r.id === id);
+    if (rfqIndex === -1) return;
+    const fieldName = `${type}_remark`;
+    const currentVal = currentRFQs[rfqIndex][fieldName] || "";
+    const newRemark = prompt(`Enter ${type.charAt(0).toUpperCase() + type.slice(1)} Remark:`, currentVal);
+    if (newRemark !== null) {
+        currentRFQs[rfqIndex][fieldName] = newRemark;
+        renderTable(currentRFQs);
+        fetch(`/ops/update-remark/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: type, remark: newRemark })
+        })
+        .then(res => { if (!res.ok) throw new Error(); })
+        .catch(() => { alert("Sync Failed"); loadTable(); });
+    }
+}
+
+function updateStage(type, id) {
+    let url = "";
+    let payload = {};
+    if (type === "float") { url = "/ops/float/" + id; sendWhatsApp(id); }
+    if (type === "costing") {
+        url = "/ops/costing/" + id;
+        const amount = prompt("Enter Final Costing Amount (₹):");
+        if (!amount) return; 
+        payload = { amount: amount };
+    }
+    if (type === "quote") { window.location.href = `/costing.html?id=${id}`; return; }
+    if (type === "order") {
+        url = "/ops/order/" + id;
+        const confirmOrder = confirm("Order Received? \n\nClick 'OK' for WON (Green) \nClick 'Cancel' for LOST (Red)");
+        payload.received = confirmOrder;
+        if (confirmOrder === false) {
+            const reason = prompt("Enter reason for losing this order:");
+            if (!reason) return; 
+            payload.reason = reason;
+        }
+    }
+    fetch(url, { 
+        method: "PUT", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(payload) 
+    })
+    .then(res => res.json())
+    .then(() => {
+        loadTable();
+        setTimeout(loadMyPerformance, 500); // Small delay to let DB write
+    });
+}
+
+async function downloadSingleExcel(id) {
+    const rfq = currentRFQs.find(r => r.id === id);
+    if (!rfq) return;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Quotation');
+    worksheet.columns = [{header:'',width:3},{header:'',width:30},{header:'',width:22},{header:'',width:12},{header:'',width:11},{header:'',width:11},{header:'',width:11},{header:'',width:11},{header:'',width:15},{header:'',width:20},{header:'',width:16},{header:'',width:18},{header:`15`},{header:'' ,width:15}];
+    worksheet.addRow([]); 
+    const headerRow = worksheet.getRow(2);
+    worksheet.mergeCells('B2:N2');
+    headerRow.getCell(2).value = `RFQ-${rfq.id} | ${rfq.company} | ${rfq.subject || 'Material Transportation'}`;
+    headerRow.getCell(2).font = { name: 'Calibri', size: 12, color: { argb: 'FFFFFFFF' }, bold: true };
+    headerRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2F57' } };
+    headerRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+    const subLabels = ["From Location", "To Location", "Material", "Length (FT)", "Width (FT)", "Height (FT)", "Weight (MT)", "Vehicle Type", "Quotation Per Vehicle", "Detention Amount", "Detention Free Days", "Rates Valid Till", "Remark"];
+    const subHeaderRow = worksheet.getRow(3);
+    subLabels.forEach((text, i) => {
+        const cell = subHeaderRow.getCell(i + 2);
+        cell.value = text;
+        cell.font = { name: 'Calibri', size: 11, bold: true };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+    });
+    const dims = rfq.dimensions || {};
+    const values = [rfq.pickup_city || '-', rfq.delivery_city || '-', rfq.material || '-', parseFloat(dims.length)||0, parseFloat(dims.breadth)||0, parseFloat(dims.height)||0, parseFloat(rfq.weight)||0, rfq.vehicle_type || '-', rfq.quotation_amount ? `₹${Number(rfq.quotation_amount).toLocaleString('en-IN')}` : '-', rfq.detention || '1500', "12 Hours each side", "17-02-2026", rfq.admin_remark || "-"];
+    const dataRow = worksheet.getRow(4);
+    values.forEach((val, i) => {
+        const cell = dataRow.getCell(i + 2);
+        cell.value = val;
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; 
+        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Globe_Quotation_RFQ_${rfq.id}.xlsx`;
+    link.click();
+}
+
+function sendEmail(id) {
+    const rfq = currentRFQs.find(r => r.id === id);
+    if (!rfq) return;
+
+    const l = rfq.dimensions?.length || rfq.length || 0;
+    const b = rfq.dimensions?.breadth || rfq.breadth || 0;
+    const h = rfq.dimensions?.height || rfq.height || 0;
+    const wt = rfq.weight || 0;
+
+    const subjectLine = `Quotation: ${rfq.pickup_city} to ${rfq.delivery_city} | ${rfq.company} | RFQ-${rfq.id}`;
+    
+    const emailBody = `Dear Deepak Ji,
+ 
+Good day to you..!!!
+ 
+We wish Many Thanks for sending your valuable inquiry to us. We warmly welcome it. With reference to the above subject line, we are pleased to quote the rate as below on behalf of Globe Ecologistics Pvt. Ltd.
+
+--------------------------------------------------
+INQUIRY DETAILS:
+--------------------------------------------------
+Company: ${rfq.company}
+Subject: ${rfq.subject || 'Material Transportation'}
+Route: ${rfq.pickup_city} to ${rfq.delivery_city}
+Material: ${rfq.material || 'N/A'}
+Weight: ${wt} MT
+Dimensions: ${l} (L) x ${b} (W) x ${h} (H) FT
+Vehicle Type: ${rfq.vehicle_type || 'N/A'}
+Quoted Rate: ${formatIndianNumber(rfq.quotation_amount)}
+--------------------------------------------------
+
+Terms & Conditions :- 
+
+1) Given Rate is exclusive of any ODC / RTO Charges. It shall be paid additionally (If any).
+2) Loading & Unloading would be within your scope.
+3) Transit insurance would be within your scope. 
+4) ROW issue resolution would be within your scope. 
+5) G.S.T. would be applicable at a rate of 18% FCM Basis.
+6) Given rate is for the above-mentioned dimensions. In case of change in dimension, the basic rate may change. (If Any)
+7) Additional weight will be charged on 100% rate (Pro-rata basis)
+
+Please Note :- 
+
+Payment Terms shall be within 30 days from the Invoice submission along with the necessary supporting.  
+
+Consignment will be booked under Carriage by Road Act 2007 Section 10 r/w Section 11
+
+Hope to have a positive response from you soon in this regard.
+
+Regards,
+Operations Team
+Globe Ecologistics Pvt. Ltd.`;
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(gmailUrl, '_blank');
+}
+function editInquiry(id) { 
+    window.location.href = `/edit-inquiry.html?id=${id}`; 
+}
+
+function deleteInquiry(id) { 
+    if(confirm("Delete this RFQ?")) { 
+        fetch(`/admin/rfq/${id}`, { method: "DELETE" }).then(() => loadTable()); 
+    } 
+}
+
+function sendWhatsApp(id) { 
+    fetch(`/api/generate-whatsapp/${id}`)
+        .then(res => res.json())
+        .then(data => { 
+            if(data.url) window.open(data.url, '_blank'); 
+        }); 
+}
+
+// INITIAL LOAD
+loadTable();
+loadMyPerformance();
+</script>
+</body>
+</html>
