@@ -1,0 +1,134 @@
+[
+    {
+        "id": 1,
+        "company": "Envision",
+        "subject": "Pune to Abad",
+        "branch": "Bangalore",
+        "branch_manager": "Kiran",
+        "manager_phone": "8050142354",
+        "assigned_to": "ops1",
+        "dimensions": {
+            "length": "22",
+            "breadth": "22",
+            "height": "22"
+        },
+        "weight": "22",
+        "status": {
+            "floated": true,
+            "costing_received": true,
+            "quotation_done": true,
+            "order_received": true
+        },
+        "quotation_amount": "1222222",
+        "admin_remark": "-",
+        "management_remark": "hello",
+        "customer_remark": "Hello",
+        "history": [
+            {
+                "timestamp": "25/2/2026, 3:22:56 pm",
+                "message": "RFQ Created by Admin and assigned to ops1"
+            },
+            {
+                "timestamp": "25/2/2026, 3:23:45 pm",
+                "message": "RFQ details manually updated by ops"
+            },
+            {
+                "timestamp": "25/2/2026, 3:23:51 pm",
+                "message": "RFQ Status: Floated (WhatsApp message generated for branch)"
+            },
+            {
+                "timestamp": "25/2/2026, 3:24:10 pm",
+                "message": "RFQ Status: Costing Received (Amount: ₹111111)"
+            },
+            {
+                "timestamp": "25/2/2026, 3:24:18 pm",
+                "message": "RFQ Status: Quotation Completed (Final Quote: ₹22222)"
+            },
+            {
+                "timestamp": "25/2/2026, 3:24:32 pm",
+                "message": "RFQ CLOSED: Order WON! Status updated to Received."
+            },
+            {
+                "timestamp": "25/2/2026, 3:25:02 pm",
+                "message": "RFQ Status: Quotation Completed (Final Quote: ₹1222222)"
+            },
+            {
+                "timestamp": "25/2/2026, 4:11:54 pm",
+                "message": "RFQ Status: Floated (WhatsApp message generated for branch)"
+            },
+            {
+                "timestamp": "25/2/2026, 4:13:12 pm",
+                "message": "RFQ CLOSED: Order WON! Status updated to Received."
+            }
+        ],
+        "created_at": "25/2/2026",
+        "pickup_city": "Pune",
+        "delivery_city": "Ahmedabad",
+        "pickup_pincode": "582118",
+        "delivery_pincode": "382501",
+        "material": "other",
+        "vehicle_type": "40ft trailer",
+        "costing_amount": "111111",
+        "loss_reason": null
+    },
+    {
+        "id": 2,
+        "company": "Envision",
+        "subject": "Bangalore to Abad",
+        "branch": "Bangalore",
+        "branch_manager": "Kiran",
+        "manager_phone": "8050142354",
+        "assigned_to": "ops1",
+        "dimensions": {
+            "length": "11",
+            "breadth": "11",
+            "height": "111"
+        },
+        "weight": "11",
+        "status": {
+            "floated": true,
+            "costing_received": true,
+            "quotation_done": true,
+            "order_received": true
+        },
+        "quotation_amount": "1244444",
+        "admin_remark": "-",
+        "management_remark": "-",
+        "customer_remark": "-",
+        "history": [
+            {
+                "timestamp": "25/2/2026, 3:30:29 pm",
+                "message": "RFQ Created by Admin and assigned to ops1"
+            },
+            {
+                "timestamp": "25/2/2026, 3:31:03 pm",
+                "message": "RFQ details manually updated by ops"
+            },
+            {
+                "timestamp": "25/2/2026, 3:31:05 pm",
+                "message": "RFQ Status: Floated (WhatsApp message generated for branch)"
+            },
+            {
+                "timestamp": "25/2/2026, 3:31:10 pm",
+                "message": "RFQ Status: Costing Received (Amount: ₹122222)"
+            },
+            {
+                "timestamp": "25/2/2026, 3:31:17 pm",
+                "message": "RFQ Status: Quotation Completed (Final Quote: ₹1244444)"
+            },
+            {
+                "timestamp": "25/2/2026, 3:31:31 pm",
+                "message": "RFQ CLOSED: Order WON! Status updated to Received."
+            }
+        ],
+        "created_at": "25/2/2026",
+        "pickup_city": "Bangalore ",
+        "delivery_city": "Ahmedabad",
+        "pickup_pincode": "582118",
+        "delivery_pincode": "382501",
+        "material": "qwee",
+        "vehicle_type": "40ft trailer",
+        "costing_amount": "122222",
+        "loss_reason": null
+    }
+]
